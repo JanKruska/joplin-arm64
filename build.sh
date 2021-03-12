@@ -39,12 +39,12 @@ build() {
 
 	# Modify build to remove usages of the keytar module from code, which is
 	# not available for arm64 architecture
-	sed -i '/"keytar": ".*"/d' CliClient/package.json
-	sed -i '/"keytar": ".*"/d' ElectronClient/package.json
+	sed -i '/"keytar": ".*"/d' packages/app-cli/package.json
+	sed -i '/"keytar": ".*"/d' packages/app-desktop/package.json
 
 	# Patch ReactNative client code to remove usage of keytar. This code is
 	# copied into the Cli and Electron apps as part of the joplin build
-	git apply ${basedir}/keytar.patch
+	#git apply ${basedir}/keytar.patch
 
 	# This shares an npmcache directory, and will take a *while* if compiling
 	# from scratch. It also seems to be building dependencies such as sqlite3
@@ -95,9 +95,12 @@ package() {
 }
 
 cleanup() {
-	echo "Cleaning up..."
+	echo "Cleaning up ${srcdir}"
 	rm -rf ${srcdir}
 }
+
+# Clean old siources
+cleanup
 
 # Download sources
 download
