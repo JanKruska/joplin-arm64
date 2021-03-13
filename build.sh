@@ -14,6 +14,18 @@ npmcache="${srcdir}/npm-cache"
 # where files are packaged
 distdir=${basedir}/dist
 
+npminstall="npm install --cache ${npmcache}"
+npmclient="npm"
+
+# while [ -n "${1-}" ]
+# do
+#     case "$1" in 
+#     --use-pnpm)  npmclient="pnpm";;
+#     --use-yarn) npmclient="yarn";;
+#     esac
+#     shift
+# done
+
 download() {
 	# fetch latest version tag
 	tag=`curl -s https://api.github.com/repos/${repo}/releases/latest |
@@ -32,6 +44,20 @@ build() {
 
 	# Remove husky (git hooks) from dependencies
 	sed -i '/"husky": ".*"/d' package.json
+	
+	echo "Tweaking lerna.json"
+    tmp_json="$(mktemp --tmpdir="$srcdir")"
+    lerna_json="${srcdir}/lerna.json"
+    jq ".packages = [
+            \"packages/app-cli\", \"packages/app-desktop\",
+            \"packages/fork-htmlparser2\", \"packages/fork-sax\",
+            \"packages/lib\", \"packages/renderer\", \"packages/tools\",
+            \"packages/turndown\", \"packages/turndown-plugin-gfm\"
+            ] |
+        . += {\"npmClient\": \"${npmclient}\", \"npmClientArgs\": [\"--cache $npmcache\"]}" \
+        "$lerna_json" > "$tmp_json"
+    cat "$tmp_json" > "$lerna_json"
+    rm "$tmp_json"
 
 	# Force Lang
 	# INFO: https://github.com/alfredopalhares/joplin-pkgbuild/issues/25
@@ -51,17 +77,19 @@ build() {
 	# several times. This can all likely be sped up significantly.
 
 	# npm complains for missing execa package - force to install it
-	npm install --cache ${npmcache} execa
-	npm install --cache ${npmcache}
+	${npminstall} execa
+	${npminstall}
 
 	# CliClient
-	cd CliClient
-	npm install --cache ${npmcache}
-	cd ..
+	cd packages/app-cli
+	npm run build
+	echo "Cli Client built"
+	cd ${srcdir}
 
 	# Electron App
-	cd ElectronClient
-	npm install --cache ${npmcache}
+	cd packages/app-desktop
+	npm run build
+	echo "Electron Client built"
 	npm run dist
 
 	cd ${basedir}
@@ -80,8 +108,8 @@ package() {
 	librelative=lib/node_modules/joplin
 	libdir=${dst}/joplin-cli/${librelative}
 	mkdir -p ${libdir}
-	cp -R ${srcdir}/CliClient/build/* ${libdir}
-	cp -R ${srcdir}/CliClient/node_modules ${libdir}
+	cp -R ${srcdir}/packages/app-cli/build/* ${libdir}
+	cp -R ${srcdir}/packages/app-cli/node_modules ${libdir}
 
 	bindir=${dst}/joplin-cli/bin
 	mkdir -p ${bindir}
@@ -89,7 +117,7 @@ package() {
 
 	# electron client
 	mkdir -p ${dst}/joplin
-	cp -R ${srcdir}/ElectronClient/dist/*.AppImage ${dst}/joplin
+	cp -R ${srcdir}/packages/app-desktop/dist/*.AppImage ${dst}/joplin
 
 	cd ${basedir}
 }
