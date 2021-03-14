@@ -11,11 +11,16 @@ srcdir="/tmp/github_joplin"
 # npm cache directory for building stage
 npmcache="${srcdir}/npm-cache"
 
+npminstall="npm install --cache ${npmcache}"
+npmclient="npm"
+
 # where files are packaged
 distdir=${basedir}/dist
 
-npminstall="npm install --cache ${npmcache}"
-npmclient="npm"
+#Directory for .desktop files
+desktop_dir="$HOME/.local/share/applications"
+
+
 
 # while [ -n "${1-}" ]
 # do
@@ -118,7 +123,8 @@ package() {
 	# electron client
 	mkdir -p ${dst}/joplin
 	cp -R ${srcdir}/packages/app-desktop/dist/*.AppImage ${dst}/joplin
-
+	cp -R ${srcdir}/packages/app-desktop/build/icons/128x128.png ${dst}/joplin
+    
 	cd ${basedir}
 }
 
@@ -127,7 +133,23 @@ cleanup() {
 	rm -rf ${srcdir}
 }
 
-# Clean old siources
+install_desktop(){
+cd ${basedir}
+echo "Do you wish to add a desktop file to ${desktop_dir} to start joplin-desktop?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes )   cp joplin.desktop temp.desktop
+                sed  -i "s/Exec=/Exec=${dst}/joplin/*.AppImage/g" tmp.desktop
+                sed  -i 's/Icon=/Exec=${dst}/joplin/128x128.png/g' tmp.desktop
+                cp -i tmp.desktop ${desktop_dir}/joplin.desktop 
+                rm tmp.desktop
+                break;;
+        No ) exit;;
+    esac
+done
+}
+
+# Clean old sources
 cleanup
 
 # Download sources
@@ -141,5 +163,9 @@ package
 
 # cleanup sources
 cleanup
+
+# install desktop scripts
+install_desktop
+
 
 echo "Process terminated successfully. Results in ${distdir}"
