@@ -1,7 +1,7 @@
-diff --git a/ReactNativeClient/lib/services/keychain/KeychainServiceDriver.node.ts b/ReactNativeClient/lib/services/keychain/KeychainServiceDriver.node.ts
+diff --git a/packages/lib/services/keychain/KeychainServiceDriver.node.ts b/packages/lib/services/keychain/KeychainServiceDriver.node.ts
 index 5522622..ea3daf5 100644
---- a/ReactNativeClient/lib/services/keychain/KeychainServiceDriver.node.ts
-+++ b/ReactNativeClient/lib/services/keychain/KeychainServiceDriver.node.ts
+--- a/packages/lib/services/keychain/KeychainServiceDriver.node.ts
++++ b/packages/lib/services/keychain/KeychainServiceDriver.node.ts
 @@ -1,5 +1,4 @@
  import KeychainServiceDriverBase from './KeychainServiceDriverBase';
 -import shim from 'lib/shim';
