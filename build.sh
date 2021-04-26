@@ -148,5 +148,4 @@ package
 # cleanup sources
 cleanup
 
-
 echo "Process terminated successfully. Results in ${distdir}"
