@@ -133,22 +133,6 @@ cleanup() {
 	rm -rf ${srcdir}
 }
 
-install_desktop(){
-cd ${basedir}
-echo "Do you wish to add a desktop file to ${desktop_dir} to start joplin-desktop?"
-select yn in "Yes" "No"; do
-    case $yn in
-        Yes )   cp joplin.desktop temp.desktop
-                sed  -i "s/Exec=/Exec=${dst}/joplin/*.AppImage/g" tmp.desktop
-                sed  -i 's/Icon=/Exec=${dst}/joplin/128x128.png/g' tmp.desktop
-                cp -i tmp.desktop ${desktop_dir}/joplin.desktop 
-                rm tmp.desktop
-                break;;
-        No ) exit;;
-    esac
-done
-}
-
 # Clean old sources
 cleanup
 
@@ -164,8 +148,6 @@ package
 # cleanup sources
 cleanup
 
-# install desktop scripts
-install_desktop
 
 
 echo "Process terminated successfully. Results in ${distdir}"
